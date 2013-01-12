@@ -4,3 +4,7 @@
 *.jar
 *.war
 *.ear
+
+# Sublime Text Project Files #
+*.sublime-project
+*.sublime-workspace
