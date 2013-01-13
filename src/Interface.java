@@ -1,23 +1,19 @@
 import java.awt.*;
-import java.awt.event.*;
+//import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.event.*;
+//import javax.swing.event.*;
 
 /**
-  *
-  * Beschreibung
-  *
-  * @author FichteFoll
+  * ToDoc
   */
 
 public class Interface extends JFrame {
-    // Anfang Attribute
-    // Ende Attribute
-
-    private int width  = 800;
+	private static final long serialVersionUID = -426887329375649342L;
+	
+	private int width  = 800;
     private int height = 600;
 
-    private Point ballPosition[] = new Point(0, 0);
+    private Point ballPosition = new Point(0, 0);
 
     public Interface(String title) {
         super(title);
@@ -38,8 +34,11 @@ public class Interface extends JFrame {
         // do some painting here
     }
 
-    public Bounds getFieldBounds() {
-        // returns the actiual bounds of the playable field without borders
+    /**
+     * @return The actual bounds of the playable field without borders
+     */
+    public Rectangle getFieldBounds() {
+    	return new Rectangle();
     }
 
     public void setBallPosition(int x, int y) {
@@ -50,7 +49,7 @@ public class Interface extends JFrame {
         ballPosition.setLocation(p);
     }
 
-    /*public static void main(String[] args) {
-        new Interface("Interface");
-    }*/
+    public static void main(String[] args) {
+        Interface inter = new Interface("Interface");
+    }
 }
