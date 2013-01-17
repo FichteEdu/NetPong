@@ -121,56 +121,68 @@ public class Interface extends JFrame {
                 height - top * 2);
     }
     
-    /**
-     * Extends Rectangle2D.Double by a function to "fill" a rect on a Graphics object.
-     * Removes the necessity for casting/rounding the values to integers.
-     * 
-     * 
-     */
-    class DoubleFillRect extends Rectangle2D.Double {
-        private static final long serialVersionUID = -1144349081899068748L;
-
-        public DoubleFillRect(int i, int j, int width, int height) {
-            super(i, j, width, height);
-        }
-
-        /**
-         * Calls {@code g.fillRect()} with the rounded extends of this rectangle.
-         * 
-         * @param g Graphics object to be drawn onto.
-         */
-        public void paint(Graphics g) {
-            g.fillRect(dtoi(x), dtoi(y), dtoi(width), dtoi(height));
-        }
-        
-        /**
-         * Set new x and y coordinates.
-         * 
-         * @param x New x position.
-         * @param y New y position.
-         */
-        public void setLocation(double x, double y) {
-            setRect(x, y, width, height);
-        }
-        
-        /**
-         * Shift the current x and y coordinates by byx and byy.
-         * 
-         * @param byx To shift x coordinate by.
-         * @param byy To shift y coordinate by.
-         */
-        public void shiftLocation(double byx, double byy) {
-            setRect(x + byx, y + byy, width, height);
-        }
-    }
-
     private int dtoi(double d) {
         return (int) Math.round(d);
     }
 
-    /* keep this to test stings */
+    /* keep this to test things */
     public static void main(String[] args) {
         Interface inter = new Interface("NetPong 0.1");
         inter.setVisible(true);
+    }
+}
+
+/**
+ * Extends Rectangle2D.Double by a function to "fill" a rect on a Graphics object.
+ * Removes the necessity for casting/rounding the values to integers.
+ *  
+ */
+class DoubleFillRect extends Rectangle2D.Double {
+    private static final long serialVersionUID = -1144349081899068748L;
+
+    public DoubleFillRect(int i, int j, int width, int height) {
+        super(i, j, width, height);
+    }
+
+    /**
+     * Calls {@code g.fillRect()} with the rounded extends of this rectangle.
+     * 
+     * @param g Graphics object to be drawn onto.
+     */
+    public void paint(Graphics g) {
+        g.fillRect(dtoi(x), dtoi(y), dtoi(width), dtoi(height));
+    }
+    
+    /**
+     * Set new x and y coordinates.
+     * 
+     * @param x New x position.
+     * @param y New y position.
+     */
+    public void setLocation(double x, double y) {
+        setRect(x, y, width, height);
+    }
+    
+    /**
+     * Set new y coordinate.
+     * 
+     * @param y New y position.
+     */
+    public void setY(double y) {
+        setRect(x, y, width, height);
+    }
+    
+    /**
+     * Shift the current x and y coordinates by byx and byy.
+     * 
+     * @param byx To shift x coordinate by.
+     * @param byy To shift y coordinate by.
+     */
+    public void shiftLocation(double byx, double byy) {
+        setRect(x + byx, y + byy, width, height);
+    }
+    
+    private int dtoi(double d) {
+        return (int) Math.round(d);
     }
 }
