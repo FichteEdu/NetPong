@@ -13,47 +13,35 @@ public class GameSocket implements Runnable {
     private OutputStream out;
     private InputStream in;
 
-    private int lastPos = 0;
+    private double lastValue = 0;
+    private double lastPos[] = new double[3];
     private boolean hasCollided = false;
     private boolean isCancelled = false;
-    static Random r = new Random();
+    private boolean isHost;
 
-    GameSocket() throws IOException {
-        listener = new ServerSocket(this.port);
-        socket = new Socket();
 
-    }
+    GameSocket() {
 
-    
-    // for testing purposes only
-    public static void main(String[] args) throws IOException, InterruptedException {
-        GameSocket s = new GameSocket();
-        s.connect("localhost");
-        while(!s.isConnected()) {
-            System.out.println("Waiting for connection");
-            Thread.sleep(100);
-        }
-        while(true) {
-            int a = r.nextInt(8);
-            System.out.println("Writing: " + a);
-            s.writePosition(a, true);
-            System.out.println("Got: " + s.getPosition());
-            Thread.sleep(100);
-        }
     }
 
 
     // attempts to connect to the host
     // does not block until a connection is established
-    public void connect(String host) {
+    public void connect(String host, boolean isHost) {
+        this.isHost = isHost;
+        socket = new Socket();
         isCancelled = false;
         this.host = host;
+        System.out.println("starting");
         new Thread(this).start();
     }
 
 
     // returns true if the socket is connected
     public boolean isConnected() {
+        if(socket == null) {
+            return false;
+        }
         return socket.isConnected();
     }
 
@@ -62,19 +50,29 @@ public class GameSocket implements Runnable {
     public void run() {
         try {
             while(!isCancelled) {
+                System.out.println("Waiting");
                 try {
-                    socket.connect(new InetSocketAddress(this.host, this.port));
-                } catch (ConnectException e) {
+                    if(isHost) {
+                        System.out.println("Waiting for socket");
+                        listener = new ServerSocket(port);
+                        socket = listener.accept();
+                    } else {
+                        System.out.println("creating Socket");
+                        socket = new Socket();
+                        socket.connect(new InetSocketAddress(this.host, this.port));
+                    }
+                } catch (Exception e) {
+                    System.out.println(e.toString());
                     Thread.sleep(1000);
                     continue;
                 }
-                //waiting for accept
-                Socket tmp = listener.accept();
                 out = socket.getOutputStream();
-                in = tmp.getInputStream();
+                in = socket.getInputStream();
+                return;
             }
+            System.out.println("Cancel");
         } catch (Exception e) {
-
+            System.out.println("error: " + e.toString());
         }
     }
 
@@ -82,14 +80,35 @@ public class GameSocket implements Runnable {
 
     // cancels the current connection attempt
     public void cancel() {
-        isCancelled = true;
+        if(isHost) {
+            try {
+                listener.close();
+            } catch (Exception e) {
+
+            }
+
+        } else {
+            isCancelled = true;
+        }
+
     }
 
 
-    // writes the position of the player's bar and whether the ball has collided with it in the stream and flushes it
-    public void writePosition(int pos, boolean hasCollided) {
+    // writes the position of the ball and the bar in the stream and flushes it
+    public void writePositions(double ballX, double ballY, double block) {
         try {
-            out.write(ByteBuffer.allocate(4).putInt(hasCollided ? pos  | Integer.MIN_VALUE : pos).array());
+            out.write(ByteBuffer.allocate(8).putDouble(ballX).array());
+            out.write(ByteBuffer.allocate(8).putDouble(ballY).array());
+            out.write(ByteBuffer.allocate(8).putDouble(block).array());
+            out.flush();
+        } catch (IOException e) {
+            // will probably never happen
+        }
+    }
+
+    public void writeBar(double block) {
+        try {
+            out.write(ByteBuffer.allocate(8).putDouble(block).array());
             out.flush();
         } catch (IOException e) {
             // will probably never happen
@@ -98,43 +117,58 @@ public class GameSocket implements Runnable {
 
 
     // returns the current position of the other player's bar
-    public int getPosition() {
+    public double[] getPositions() {
         try {
-            while(in.available() >= 4) {
-                byte[] b = new byte[4];
-                if(in.read(b) < 4)
+            while(in.available() >= 8*3) {
+                byte[] b1 = new byte[8];
+                byte[] b2 = new byte[8];
+                byte[] b3 = new byte[8];
+                if(in.read(b1) + in.read(b2) + in.read(b3) < 8*3) {
                     return lastPos;
-                ByteBuffer pos = ByteBuffer.wrap(b);
-                // lastPos = pos.getInt() & 0xF;
-                lastPos = pos.getInt();
-                hasCollided = lastPos < 0;
-                if(hasCollided)
-                    lastPos &= 0xF;
+                }
+                ByteBuffer ballX = ByteBuffer.wrap(b1);
+                ByteBuffer ballY = ByteBuffer.wrap(b2);
+                ByteBuffer block = ByteBuffer.wrap(b3);
+                return new double[]{ballX.getDouble(), ballY.getDouble(), block.getDouble()};
             }
+            return lastPos;
         } catch (IOException e) {
             return lastPos;
         }
-        return lastPos;
     }
 
 
-    // returns whether or not the ball has collided with the other player's bar
-    public boolean hasCollided() {
-        if(hasCollided) {
-            hasCollided = false;
-            return true;
+    // returns the current position of the other player's bar
+    public double getBlock() {
+        try {
+            while(in.available() >= 8) {
+                byte[] b = new byte[8];
+                if(in.read(b) < 8) {
+                    return lastValue;
+                }
+                ByteBuffer block = ByteBuffer.wrap(b);
+                return block.getDouble();
+            }
+            return lastValue;
+        } catch (IOException e) {
+            return lastValue;
         }
-        return hasCollided;
     }
 
+    public boolean isHost() {
+        return isHost;
+    }
 
     // disconnects
     public void disconnect() {
         try {
+            if(isHost) {
+                listener.close();
+            }
             in.close();
             out.close();
             socket.close();
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
 
         }
     }
