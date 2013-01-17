@@ -1,6 +1,5 @@
 import java.io.*;
 import java.net.*;
-import java.util.Random;
 import java.nio.ByteBuffer;
 
 public class GameSocket implements Runnable {
@@ -15,7 +14,6 @@ public class GameSocket implements Runnable {
 
     private double lastValue = 0;
     private double lastPos[] = new double[3];
-    private boolean hasCollided = false;
     private boolean isCancelled = false;
     private boolean isHost;
 
@@ -23,7 +21,6 @@ public class GameSocket implements Runnable {
     GameSocket() {
 
     }
-
 
     // attempts to connect to the host
     // does not block until a connection is established
@@ -36,7 +33,6 @@ public class GameSocket implements Runnable {
         new Thread(this).start();
     }
 
-
     // returns true if the socket is connected
     public boolean isConnected() {
         if(socket == null) {
@@ -44,7 +40,6 @@ public class GameSocket implements Runnable {
         }
         return socket.isConnected();
     }
-
 
     // does the actual connecting
     public void run() {
@@ -76,8 +71,6 @@ public class GameSocket implements Runnable {
         }
     }
 
-
-
     // cancels the current connection attempt
     public void cancel() {
         if(isHost) {
@@ -92,7 +85,6 @@ public class GameSocket implements Runnable {
         }
 
     }
-
 
     // writes the position of the ball and the bar in the stream and flushes it
     public void writePositions(double ballX, double ballY, double block) {
@@ -115,7 +107,6 @@ public class GameSocket implements Runnable {
         }
     }
 
-
     // returns the current position of the other player's bar
     public double[] getPositions() {
         try {
@@ -136,7 +127,6 @@ public class GameSocket implements Runnable {
             return lastPos;
         }
     }
-
 
     // returns the current position of the other player's bar
     public double getBlock() {
@@ -168,9 +158,9 @@ public class GameSocket implements Runnable {
             in.close();
             out.close();
             socket.close();
-        } catch (IOException | NullPointerException e) {
-
         }
+        catch (IOException e) { }
+        catch (NullPointerException e) { }
     }
 
 }
