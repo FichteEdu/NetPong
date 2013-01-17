@@ -109,6 +109,12 @@ public class Interface extends JFrame {
         // TODO: score
     }
 
+    public void dispose() {
+        // exit when window is closed
+        super.dispose();
+        System.exit(0);
+    }
+
     /**
      * @return The actual bounds of the playable field without borders
      */
