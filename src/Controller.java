@@ -1,27 +1,23 @@
-import java.util.Random;
-import java.util.Vector;
 import java.lang.Math;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyListener;
 
 public class Controller {
+    String version = "0.1 PRE-ALPHA";
 
-    Random randNr = new Random();
     int punkte = 0;
-    KeyListener ListenForKeys = new ListenForKeys(); // ListenForKeys gets new instance
-    Interface inter;
-    GameSocket socket;
-    Rectangle field;
+    KeyListener ListenForKeys = new ListenForKeys(); // ListenForKeys gets new
+                                                     // instance
+    private Interface inter;
+    private GameSocket socket;
+    private Rectangle field;
 
-    final double barSpeed = 20; // movementspeed of the bars
-    boolean gameRunning = true; // set to false for pause
-    double ballDelta[] = new double[2];
-    double ballPosition[] = new double[2]; // [0] is x-delty [1] is y-delta
-    double barPosition[] = new double[2]; // 0 is x and 1 is y
-    int barHeight = 40;
-    boolean host;
-    double gameSpeed = 12;
-    double allPositions[] = new double[3]; //contains ball-x ball-y and opponent-bar-y
+    private final double barSpeed = 20; // movementspeed of the bars
+    private boolean gameRunning = true; // set to false for pause
+    private Point ballDelta = new Point();
+    private double gameSpeed = 12;
+    private int sleep = 10;
 
     public static void main(String[] args) {
         new Controller();
@@ -29,87 +25,100 @@ public class Controller {
 
     public Controller() {
         // establish connection
-        Connector c = new Connector();
+        Connector c = new Connector("NetPong " + version + " - Connect");
         socket = c.connect();
 
         // initialize game interface
-        inter = new Interface("NetPong 0.1 PRE-ALPHA");
+        inter = new Interface("NetPong " + version);
         field = inter.getFieldBounds();
         inter.setVisible(true);
-        startBall(gameSpeed);
+        startBall();
 
         while (gameRunning) {
-            if (host) {
-                moveBars();
-                checkCollision();
-                moveBall();
-                setPosArray();
-                socket.writePositions(allPositions);
-                inter.repaint();
-            } else {
-                getCoords();
-                inter.repaint();
+            // check for input
+            moveBar();
+
+            // do math iff host
+            if (socket.isHost()) {
+                checkCollisions();
+                moveBall(1);
+            }
+
+            // communication
+            writePositions();
+            readPositions();
+
+            // update interface
+            inter.repaint();
+
+            try {
+                Thread.sleep(sleep);
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
 
-    private boolean inRange(int index) {
-        if (ballPosition[1] >= barPosition[index]
-                && ballPosition[1] <= barPosition[index] + barHeight)
-            return true;
+    private void readPositions() {
+        if (socket.isHost())
+            inter.blocks[1].setY(socket.getBlock());
+        else {
+            double pos[] = socket.getPositions();
+            inter.ball.setLocation(pos[0], pos[1]);
+            inter.blocks[0].setY(pos[2]);
+        }
+    }
+    
+    private void writePositions() {
+        if (socket.isHost())
+            socket.writePositions(inter.ball.x, inter.ball.y, inter.blocks[0].y);
         else
-            return false;
+            socket.writeBar(inter.blocks[1].y);
     }
 
-    private void getCoords() {
-     ballPosition[0] = socket.getPositions()[0];
-     ballPosition[1] = socket.getPositions()[1];
-     barPosition[1] = socket.getPositions()[2];
+    private void checkCollisions() {
+        // check if the ball will be in the horizontal bounds
+        if (    inter.ball.y         + ballDelta.y < field.y &&
+                inter.ball.getMaxY() + ballDelta.y < field.getMaxY())
+            ballDelta.y *= -1;
+
+        // check if the ball will intersect a block
+        // move the ball and move it back to use awesome `intersects()` method
+        moveBall(1);
+        boolean collides = inter.ball.intersects(inter.blocks[0])
+                        || inter.ball.intersects(inter.blocks[1]);
+        moveBall(-1);
+        if (collides)
+            ballDelta.x *= -1;
+
+        // TODO game over
+        //if (!field.contains(inter.ball)) 
     }
 
-    private void setPosArray() {
-        allPositions[0] = ballPosition[0];
-        allPositions[1] = ballPosition[1];
-        allPositions[2] = barPosition[1];
-       }
+    private void moveBall(int times) {
+        inter.ball.shiftLocation(times * ballDelta.x, times * ballDelta.y);
+    }
 
-    private void checkCollision() {
-        int ballSize = (int) inter.ball.height;
-        if (ballPosition[0] + ballSize + ballDelta[0] >= 760 && inRange(1)
-                || ballPosition[0] + ballDelta[0] <= 40 && inRange(0)) {
-            ballDelta[0] = ballDelta[0] * -1;
+    private void startBall() {
+        // possibly add checks for right direction
+        ballDelta.setLocation(Math.random() * gameSpeed, Math.random() * gameSpeed);
+    }
+
+    private void moveBar() {
+        DoubleFillRect block = inter.blocks[socket.isHost() ? 0 : 1];
+
+        // TODO key inputs
+        if (/*up*/true) {
+            if (block.y - barSpeed > field.y)
+                block.shiftLocation(0, -barSpeed);
         }
 
-        if (ballPosition[1] + ballSize + ballDelta[1] >= 600
-                || ballPosition[1] + ballDelta[1] <= 0) {
-            ballDelta[1] = ballDelta[1] * -1;
-        }
-    }
-
-    private void moveBall() {
-        ballPosition[0] = ballPosition[0] + ballDelta[0];
-        ballPosition[1] = ballPosition[1] + ballDelta[1];
-    }
-
-    private void startBall(double maxSpeed) {
-        ballDelta[0] = Math.random() * maxSpeed;
-        ballDelta[1] = Math.random() * maxSpeed; // possibly add checks for right direction
-    }
-
-    private void moveBars() {
-        if (up) {
-            if (barPosition[1] - barSpeed > field.y) {
-                barPosition[1] = barPosition[1] - barSpeed;
-            }
-        }
-
-        if (down) {
-            if (barPosition[1] + barSpeed < field.getMaxY()) {
-                barPosition[1] = barPosition[1] + barSpeed;
-            }
+        if (/*down*/true) {
+            if (block.y + barSpeed > field.y)
+                block.shiftLocation(0, barSpeed);
             // else jiggle(move up 9px or something)
             // maybe jiggle but that would be hard(er)
-
         }
     }
 }
