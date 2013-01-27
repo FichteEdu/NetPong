@@ -7,7 +7,7 @@ public class Controller {
 
     int punkte = 0;
     ListenForKeys keyListener = new ListenForKeys(); // ListenForKeys gets new
-                                                       // instance
+                                                     // instance
     private Interface inter;
     private GameSocket socket;
     private Rectangle field;
@@ -29,7 +29,7 @@ public class Controller {
         c.dispose();
         
         // initialize game interface
-        inter = new Interface("NetPong " + version);
+        inter = new Interface("NetPong " + version + " - " + (socket.isHost() ? "Host" : "Client"));
         inter.addKeyListener(keyListener);
         field = inter.getField();
 
