@@ -1,7 +1,6 @@
 import java.lang.Math;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.KeyListener;
 
 public class Controller {
     String version = "0.1 PRE-ALPHA";
@@ -32,8 +31,8 @@ public class Controller {
         // initialize game interface
         inter = new Interface("NetPong " + version);
         inter.addKeyListener(keyListener);
-        field = inter.getFieldBounds();
-        inter.setVisible(true);
+        field = inter.getField();
+
         startBall();
 
         while (gameRunning) {
@@ -117,7 +116,7 @@ public class Controller {
         }
 
         if (keyListener.isDown()) {
-            if (block.y + barSpeed > field.y)
+            if (block.getMaxY() + barSpeed < field.getMaxY())
                 block.shiftLocation(0, barSpeed);
             // else jiggle(move up 9px or something)
             // maybe jiggle but that would be hard(er)

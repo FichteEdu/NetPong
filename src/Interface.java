@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferStrategy;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
@@ -25,6 +26,26 @@ public class Interface extends JFrame {
     
     private Dimension blockDim     = new Dimension(15, 80),
                       separatorDim = new Dimension(10, 10);
+                      
+    // static components
+    private Rectangle field = new Rectangle(
+            hmargin,
+            vmargin + borderw,
+            width - hmargin * 2,
+            height - (vmargin + borderw) * 2);
+    
+    private DoubleFillRect borders[] = {
+            new DoubleFillRect(
+                    hmargin,
+                    vmargin,
+                    field.width,
+                    borderw),
+            new DoubleFillRect(
+                    hmargin,
+                    dtoi(field.getMaxY()),
+                    field.width,
+                    borderw)
+    };
 
     // dynamic components
     /**
@@ -68,63 +89,74 @@ public class Interface extends JFrame {
         int x = (d.width  - getSize().width ) / 2;
         int y = (d.height - getSize().height) / 2;
         setLocation(x, y);
+
+        setVisible(true);
+        createBufferStrategy(2);
     }
 
     @Override
     public void paint(Graphics g) {
-        // TODO: Double buffering
+        draw();
         super.paint(g); // I don't know if this is necessary
-        Rectangle bounds = getFieldBounds();
-        
-        // background
-        g.setColor(bgcolor);
-        g.fillRect(0, 0, width, height);
-        
-        g.setColor(fgcolor);
-        
-        // border boxes
-        g.fillRect(
-                hmargin,
-                vmargin,
-                bounds.width,
-                borderw);
-        g.fillRect(
-                hmargin,
-                dtoi(bounds.getMaxY()),
-                bounds.width,
-                borderw);
-        
-        // dotted seperator line
-        int h = separatorDim.height,
-            x = (width + separatorDim.width) / 2;
-        ;
-        for (int y = bounds.y + h; y < height - vmargin - borderw - h; y += h * 2)
-            g.fillRect(x, y, separatorDim.width, h);
-        
-        // dynamic content
-        ball.paint(g);
-        for (DoubleFillRect b : blocks)
-            b.paint(g);
-        
-        // TODO: score
     }
 
+    public void draw() {
+        BufferStrategy bf = this.getBufferStrategy();
+        Graphics g = null;
+     
+        try {
+            g = bf.getDrawGraphics();
+
+            // background
+            g.setColor(bgcolor);
+            g.fillRect(0, 0, width, height);
+            
+            g.setColor(fgcolor);
+
+            // border boxes
+            for (DoubleFillRect b : borders)
+                b.paint(g);
+
+            // dotted seperator line
+            int h = separatorDim.height,
+                x = (width + separatorDim.width) / 2;
+            
+            for (int y = field.y + h; y < height - vmargin - borderw - h; y += h * 2)
+                g.fillRect(x, y, separatorDim.width, h);
+
+            // dynamic content
+            ball.paint(g);
+            for (DoubleFillRect b : blocks)
+                b.paint(g);
+
+            // TODO: score
+     
+        } finally {
+            // It is best to dispose() a Graphics object when done with it.
+            g.dispose();
+        }
+     
+        // Shows the contents of the backbuffer on the screen.
+        bf.show();
+     
+        //Tell the System to do the Drawing now, otherwise it can take a few extra ms until 
+        //Drawing is done which looks very jerky
+        Toolkit.getDefaultToolkit().sync(); 
+    }
+    
+    /**
+     * Exit the application when run (or window closed).
+     */
     public void dispose() {
-        // exit when window is closed
         super.dispose();
         System.exit(0);
     }
-
+    
     /**
      * @return The actual bounds of the playable field without borders
      */
-    public Rectangle getFieldBounds() {
-        int top = vmargin + borderw;
-        return new Rectangle(
-                hmargin,
-                top,
-                width - hmargin * 2,
-                height - top * 2);
+    public Rectangle getField() {
+        return field;
     }
     
     private int dtoi(double d) {
