@@ -62,7 +62,7 @@ public class GameSocket implements Runnable {
                     continue;
                 }
                 out = socket.getOutputStream();
-                in = socket.getInputStream();
+                in  = socket.getInputStream();
                 return;
             }
             System.out.println("Cancel");
@@ -76,10 +76,7 @@ public class GameSocket implements Runnable {
         if(isHost) {
             try {
                 listener.close();
-            } catch (Exception e) {
-
-            }
-
+            } catch (Exception e) { }
         } else {
             isCancelled = true;
         }

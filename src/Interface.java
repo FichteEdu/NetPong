@@ -97,7 +97,6 @@ public class Interface extends JFrame {
     @Override
     public void paint(Graphics g) {
         draw();
-        super.paint(g); // I don't know if this is necessary
     }
 
     public void draw() {
@@ -132,7 +131,6 @@ public class Interface extends JFrame {
             // TODO: score
      
         } finally {
-            // It is best to dispose() a Graphics object when done with it.
             g.dispose();
         }
      
