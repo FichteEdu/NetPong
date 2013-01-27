@@ -7,8 +7,8 @@ public class Controller {
     String version = "0.1 PRE-ALPHA";
 
     int punkte = 0;
-    KeyListener ListenForKeys = new ListenForKeys(); // ListenForKeys gets new
-                                                     // instance
+    ListenForKeys keyListener = new ListenForKeys(); // ListenForKeys gets new
+                                                       // instance
     private Interface inter;
     private GameSocket socket;
     private Rectangle field;
@@ -28,9 +28,10 @@ public class Controller {
         Connector c = new Connector("NetPong " + version + " - Connect");
         socket = c.connect();
         c.dispose();
-
+        
         // initialize game interface
         inter = new Interface("NetPong " + version);
+        inter.addKeyListener(keyListener);
         field = inter.getFieldBounds();
         inter.setVisible(true);
         startBall();
@@ -47,7 +48,7 @@ public class Controller {
 
             // communication
             writePositions();
-            readPositions();
+            readPositions(); //reads AND SETS positions
 
             // update interface
             inter.repaint();
@@ -110,12 +111,12 @@ public class Controller {
         DoubleFillRect block = inter.blocks[socket.isHost() ? 0 : 1];
 
         // TODO key inputs
-        if (/*up*/true) {
+        if (keyListener.isUp()) {
             if (block.y - barSpeed > field.y)
                 block.shiftLocation(0, -barSpeed);
         }
 
-        if (/*down*/true) {
+        if (keyListener.isDown()) {
             if (block.y + barSpeed > field.y)
                 block.shiftLocation(0, barSpeed);
             // else jiggle(move up 9px or something)
