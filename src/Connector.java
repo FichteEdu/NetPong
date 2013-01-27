@@ -9,6 +9,7 @@ public class Connector extends Frame {
     private static final long serialVersionUID = 3280259391574549500L;
 
     private boolean connecting = false;
+    private boolean connected = false;
     private GameSocket socket;
 
     private TextField textField1 = new TextField();
@@ -57,6 +58,35 @@ public class Connector extends Frame {
             }
         });
         cp.add(button2);
+        
+        // window listener (for on close)
+        addWindowListener(new WindowListener() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                if (!connected)
+                    // Window closed before connection was established
+                    System.exit(0);
+            }
+
+            // all the other methods I have to "define"
+            @Override
+            public void windowActivated(WindowEvent e) { }
+
+            @Override
+            public void windowClosing(WindowEvent e) { }
+
+            @Override
+            public void windowDeactivated(WindowEvent e) { }
+
+            @Override
+            public void windowDeiconified(WindowEvent e) { }
+
+            @Override
+            public void windowIconified(WindowEvent e) {}
+
+            @Override
+            public void windowOpened(WindowEvent e) { }
+        });
 
         setVisible(true);
     }
@@ -97,6 +127,7 @@ public class Connector extends Frame {
             while (!socket.isConnected()) {
                 Thread.sleep(100);
             }
+            connected = true;
             return socket;
         }
         catch (Exception e) {
