@@ -27,6 +27,7 @@ public class Controller {
         // establish connection
         Connector c = new Connector("NetPong " + version + " - Connect");
         socket = c.connect();
+        c.dispose();
 
         // initialize game interface
         inter = new Interface("NetPong " + version);

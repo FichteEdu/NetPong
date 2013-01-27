@@ -105,11 +105,6 @@ public class Connector extends Frame {
         }
     }
 
-    public void dispose() {
-        super.dispose();
-        System.exit(0);
-    }
-
     // for testing purposes
     public static void main(String[] args) {
         Connector c = new Connector("Connector");
