@@ -134,23 +134,18 @@ public class Controller {
     }
 
     private void initBall() {
-        inter.ball.setLocation(inter.getHeight() / 2, inter.getWidth() / 2);
+        inter.ball.setLocation((inter.width  + inter.ball.width)  / 2,
+                               (inter.height + inter.ball.height) / 2);
         startBall();
     }
 
     private void moveBar() {
         DoubleFillRect bar = inter.bars[socket.isHost() ? 0 : 1];
 
-        if (keyListener.isUp()) {
-            if (bar.y - barSpeed > field.y)
+        if (keyListener.isUp() && bar.y - barSpeed > field.y)
                 bar.shiftLocation(0, -barSpeed);
-        }
 
-        if (keyListener.isDown()) {
-            if (bar.getMaxY() + barSpeed < field.getMaxY())
+        if (keyListener.isDown() && bar.getMaxY() + barSpeed < field.getMaxY())
                 bar.shiftLocation(0, barSpeed);
-            // else jiggle(move up 9px or something)
-            // maybe jiggle but that would be hard(er)
-        }
     }
 }

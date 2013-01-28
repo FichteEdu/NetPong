@@ -135,13 +135,4 @@ public class Connector extends Frame {
             return null;
         }
     }
-
-    // for testing purposes
-    public static void main(String[] args) {
-        Connector c = new Connector("Connector");
-        GameSocket s = c.connect();
-        System.out.println(((Object) s).getClass());
-        System.out.println("LOLOLOL");
-        c.dispose();
-    }
 }

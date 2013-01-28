@@ -16,9 +16,9 @@ public class Interface extends JFrame {
     private Color fgcolor = new Color(0xbdfab8);
     
     // define some constants
-    private int width   = 800,
-                height  = 600,
-                vmargin =  50,
+    public  int width   = 800,
+                height  = 600;
+    private int vmargin =  50,
                 hmargin =  50,
                 borderw =  15;
     
