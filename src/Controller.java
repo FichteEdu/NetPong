@@ -1,7 +1,6 @@
 import java.lang.Math;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.Vector;
 
 public class Controller {
     String version = "0.1 PRE-ALPHA";
@@ -20,7 +19,6 @@ public class Controller {
     private double gameSpeed = 6;
     private int sleep = 10;
     
-    private double direction[] = new double[2];
     private double directionDouble;
     
 
@@ -78,32 +76,30 @@ public class Controller {
         }
     }
     
-	private void randDirection(double low, double high) {
-		directionDouble = Math.random();
-		if (directionDouble > 0.5)
-			direction[0] = Math.random() * (high - low) + low;
-		else 
-			direction[0] = (Math.random() * (high - low) + low) * -1;
-		directionDouble = Math.random();
-		if (directionDouble > 0.5)
-			direction[1] = Math.random() * (high - low) + low;
-		else 
-			direction[1] = (Math.random() * (high - low) + low) * -1;
-		
-	}
-    
+    private double[] randDirection(double low, double high) {
+        double direction[] = {
+                Math.random() * (high - low) + low,
+                Math.random() * (high - low) + low
+        };
+
+        if (Math.random() > 0.5)
+            direction[0] *= -1;
+        if (Math.random() > 0.5)
+            direction[1] *= -1;
+
+        return direction;
+    }
+
     private void checkScore() {
-    	if (inter.ball.x < inter.blocks[0].getMinX())
-    		{
-    		    inter.score[1]++;
-    		    initBall();
-    		}
-    	if (inter.ball.x > inter.blocks[1].getMaxX())
-    		{
-    			inter.score[0]++;
-    		    initBall();
-    		}
-    	
+        if (inter.ball.x < inter.blocks[0].getMinX()) {
+            inter.score[1]++;
+            initBall();
+        }
+        if (inter.ball.x > inter.blocks[1].getMaxX()) {
+            inter.score[0]++;
+            initBall();
+        }
+
     }
     
     private void writePositions() {
@@ -129,9 +125,6 @@ public class Controller {
         moveBall(-1);
         if (collides)
             ballDelta.x *= -1;
-
-        // TODO game over
-        //if (!field.contains(inter.ball)) 
     }
 
     private void moveBall(int times) {
@@ -140,14 +133,14 @@ public class Controller {
 
     private void startBall() {
         // possibly add checks for right direction
-    	randDirection(7,12);
+        double[] direction = randDirection(7,12);
         ballDelta.setLocation(calc.normVector(direction)[0] * gameSpeed, calc.normVector(direction)[1] * gameSpeed);
         System.out.println(""+ ballDelta.getX() + "," + ballDelta.getY() + "," + directionDouble);
     }
 
     private void initBall() {
-    	inter.ball.setLocation(inter.getHeight() / 2, inter.getWidth() / 2);
-    	startBall();
+        inter.ball.setLocation(inter.getHeight() / 2, inter.getWidth() / 2);
+        startBall();
     }
     
     private void moveBar() {
