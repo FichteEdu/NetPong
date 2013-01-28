@@ -1,13 +1,15 @@
 import java.lang.Math;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.Vector;
 
 public class Controller {
     String version = "0.1 PRE-ALPHA";
 
     int punkte = 0;
-    ListenForKeys keyListener = new ListenForKeys(); // ListenForKeys gets new
-                                                     // instance
+    ListenForKeys keyListener = new ListenForKeys(); // ListenForKeys gets new instance
+    Calculations calc = new Calculations();
+                                                     
     private Interface inter;
     private GameSocket socket;
     private Rectangle field;
@@ -15,8 +17,12 @@ public class Controller {
     private final double barSpeed = 20; // movementspeed of the bars
     private boolean gameRunning = true; // set to false for pause
     private Point ballDelta = new Point();
-    private double gameSpeed = 12;
+    private double gameSpeed = 6;
     private int sleep = 10;
+    
+    private double direction[] = new double[2];
+    private double directionDouble;
+    
 
     public static void main(String[] args) {
         new Controller();
@@ -39,10 +45,11 @@ public class Controller {
             // check for input
             moveBar();
 
-            // do math iff host
+            // do math if host
             if (socket.isHost()) {
                 checkCollisions();
                 moveBall(1);
+                checkScore();
             }
 
             // communication
@@ -71,6 +78,34 @@ public class Controller {
         }
     }
     
+	private void randDirection(double low, double high) {
+		directionDouble = Math.random();
+		if (directionDouble > 0.5)
+			direction[0] = Math.random() * (high - low) + low;
+		else 
+			direction[0] = (Math.random() * (high - low) + low) * -1;
+		directionDouble = Math.random();
+		if (directionDouble > 0.5)
+			direction[1] = Math.random() * (high - low) + low;
+		else 
+			direction[1] = (Math.random() * (high - low) + low) * -1;
+		
+	}
+    
+    private void checkScore() {
+    	if (inter.ball.x < inter.blocks[0].getMinX())
+    		{
+    		    inter.score[1]++;
+    		    initBall();
+    		}
+    	if (inter.ball.x > inter.blocks[1].getMaxX())
+    		{
+    			inter.score[0]++;
+    		    initBall();
+    		}
+    	
+    }
+    
     private void writePositions() {
         if (socket.isHost())
             socket.writePositions(inter.ball.x, inter.ball.y, inter.blocks[0].y);
@@ -80,13 +115,15 @@ public class Controller {
 
     private void checkCollisions() {
         // check if the ball will be in the horizontal bounds
-        if (    inter.ball.y         + ballDelta.y < field.y &&
-                inter.ball.getMaxY() + ballDelta.y < field.getMaxY())
+        if (    inter.ball.y         + ballDelta.y < field.y ||
+                inter.ball.getMaxY() + ballDelta.y > field.getMaxY())
             ballDelta.y *= -1;
+            
 
         // check if the ball will intersect a block
         // move the ball and move it back to use awesome `intersects()` method
         moveBall(1);
+        
         boolean collides = inter.ball.intersects(inter.blocks[0])
                         || inter.ball.intersects(inter.blocks[1]);
         moveBall(-1);
@@ -103,9 +140,16 @@ public class Controller {
 
     private void startBall() {
         // possibly add checks for right direction
-        ballDelta.setLocation(Math.random() * gameSpeed, Math.random() * gameSpeed);
+    	randDirection(7,12);
+        ballDelta.setLocation(calc.normVector(direction)[0] * gameSpeed, calc.normVector(direction)[1] * gameSpeed);
+        System.out.println(""+ ballDelta.getX() + "," + ballDelta.getY() + "," + directionDouble);
     }
 
+    private void initBall() {
+    	inter.ball.setLocation(inter.getHeight() / 2, inter.getWidth() / 2);
+    	startBall();
+    }
+    
     private void moveBar() {
         DoubleFillRect block = inter.blocks[socket.isHost() ? 0 : 1];
 

@@ -24,6 +24,8 @@ public class Interface extends JFrame {
     
     private int ballSize = 10;
     
+    int score[] = new int[2]; 
+    
     private Dimension blockDim     = new Dimension(15, 80),
                       separatorDim = new Dimension(10, 10);
                       
