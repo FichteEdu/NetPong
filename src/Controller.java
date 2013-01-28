@@ -42,7 +42,6 @@ public class Controller {
             if (socket.isHost()) {
                 checkCollisions();
                 moveBall(1);
-                checkScore();
             }
 
             // communication
@@ -84,18 +83,6 @@ public class Controller {
 
         return direction;
     }
-
-    private void checkScore() {
-        if (inter.ball.x < inter.bars[0].getMinX()) {
-            inter.score[1]++;
-            initBall();
-        }
-        if (inter.ball.x > inter.bars[1].getMaxX()) {
-            inter.score[0]++;
-            initBall();
-        }
-
-    }
     
     private void writePositions() {
         if (socket.isHost())
@@ -109,17 +96,29 @@ public class Controller {
         if (    inter.ball.y         + ballVect.y < field.y ||
                 inter.ball.getMaxY() + ballVect.y > field.getMaxY())
             ballVect.y *= -1;
-            
 
         // check if the ball will intersect a bar
         // move the ball and move it back to use awesome `intersects()` method
         moveBall(1);
-        
+
         boolean collides = inter.ball.intersects(inter.bars[0])
                         || inter.ball.intersects(inter.bars[1]);
-        moveBall(-1);
         if (collides)
             ballVect.x *= -1;
+        else {
+            // if the ball is out of bounds
+            if (inter.ball.x < inter.bars[0].getMaxX()) {
+                inter.score[1]++;
+                initBall();
+            }
+            if (inter.ball.getMaxX() > inter.bars[1].x) {
+                inter.score[0]++;
+                initBall();
+            }
+        }
+
+        // revert changes
+        moveBall(-1);
     }
 
     private void moveBall(int times) {
@@ -127,8 +126,8 @@ public class Controller {
     }
 
     private void startBall() {
-        // possibly add checks for right direction
-        double[] dir = randDirection(7,12);
+        // TODO: possibly add checks for right direction
+        double[] dir = randDirection(7, 12);
         ballVect = new Vector2D(dir[0], dir[1]).normalized();
         ballVect.scale(gameSpeed);
         ballVect.print();
@@ -138,7 +137,7 @@ public class Controller {
         inter.ball.setLocation(inter.getHeight() / 2, inter.getWidth() / 2);
         startBall();
     }
-    
+
     private void moveBar() {
         DoubleFillRect bar = inter.bars[socket.isHost() ? 0 : 1];
 
