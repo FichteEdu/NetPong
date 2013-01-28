@@ -62,10 +62,10 @@ public class Interface extends JFrame {
             ballSize);
     /**
      * Array of extended Rectangle2D.Double class for easy drawing. Use
-     *     {@code blocks[n].setLocation(double x, double y)}
+     *     {@code bars[n].setLocation(double x, double y)}
      * to modify the ball's position, while n being either 1 or 2.
      */
-    public DoubleFillRect blocks[] = {
+    public DoubleFillRect bars[] = {
             new DoubleFillRect(
                     hmargin,
                     (height - blockDim.height) / 2,
@@ -127,7 +127,7 @@ public class Interface extends JFrame {
 
             // dynamic content
             ball.paint(g);
-            for (DoubleFillRect b : blocks)
+            for (DoubleFillRect b : bars)
                 b.paint(g);
 
             // TODO: score

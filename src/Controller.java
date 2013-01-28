@@ -11,7 +11,7 @@ public class Controller {
     private GameSocket socket;
     private Rectangle field;
 
-    private final double barSpeed = 20; // movementspeed of the bars
+    private final double barSpeed = 10; // movementspeed of the bars
     private boolean gameRunning = true; // set to false for pause
     private Vector2D ballVect;
     private double gameSpeed = 6;
@@ -63,11 +63,11 @@ public class Controller {
 
     private void readPositions() {
         if (socket.isHost())
-            inter.blocks[1].setY(socket.getBlock());
+            inter.bars[1].setY(socket.getBlock());
         else {
             double pos[] = socket.getPositions();
             inter.ball.setLocation(pos[0], pos[1]);
-            inter.blocks[0].setY(pos[2]);
+            inter.bars[0].setY(pos[2]);
         }
     }
 
@@ -86,11 +86,11 @@ public class Controller {
     }
 
     private void checkScore() {
-        if (inter.ball.x < inter.blocks[0].getMinX()) {
+        if (inter.ball.x < inter.bars[0].getMinX()) {
             inter.score[1]++;
             initBall();
         }
-        if (inter.ball.x > inter.blocks[1].getMaxX()) {
+        if (inter.ball.x > inter.bars[1].getMaxX()) {
             inter.score[0]++;
             initBall();
         }
@@ -99,9 +99,9 @@ public class Controller {
     
     private void writePositions() {
         if (socket.isHost())
-            socket.writePositions(inter.ball.x, inter.ball.y, inter.blocks[0].y);
+            socket.writePositions(inter.ball.x, inter.ball.y, inter.bars[0].y);
         else
-            socket.writeBar(inter.blocks[1].y);
+            socket.writeBar(inter.bars[1].y);
     }
 
     private void checkCollisions() {
@@ -111,12 +111,12 @@ public class Controller {
             ballVect.y *= -1;
             
 
-        // check if the ball will intersect a block
+        // check if the ball will intersect a bar
         // move the ball and move it back to use awesome `intersects()` method
         moveBall(1);
         
-        boolean collides = inter.ball.intersects(inter.blocks[0])
-                        || inter.ball.intersects(inter.blocks[1]);
+        boolean collides = inter.ball.intersects(inter.bars[0])
+                        || inter.ball.intersects(inter.bars[1]);
         moveBall(-1);
         if (collides)
             ballVect.x *= -1;
@@ -140,16 +140,16 @@ public class Controller {
     }
     
     private void moveBar() {
-        DoubleFillRect block = inter.blocks[socket.isHost() ? 0 : 1];
+        DoubleFillRect bar = inter.bars[socket.isHost() ? 0 : 1];
 
         if (keyListener.isUp()) {
-            if (block.y - barSpeed > field.y)
-                block.shiftLocation(0, -barSpeed);
+            if (bar.y - barSpeed > field.y)
+                bar.shiftLocation(0, -barSpeed);
         }
 
         if (keyListener.isDown()) {
-            if (block.getMaxY() + barSpeed < field.getMaxY())
-                block.shiftLocation(0, barSpeed);
+            if (bar.getMaxY() + barSpeed < field.getMaxY())
+                bar.shiftLocation(0, barSpeed);
             // else jiggle(move up 9px or something)
             // maybe jiggle but that would be hard(er)
         }
