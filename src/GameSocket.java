@@ -16,6 +16,7 @@ public class GameSocket implements Runnable {
     private double lastPos[] = new double[5];
     private boolean isCancelled = false;
     private boolean isHost;
+    private boolean isDisconnected = false;
 
 
     GameSocket() { }
@@ -38,7 +39,7 @@ public class GameSocket implements Runnable {
     
     // returns true if the socket is closed NOT WORKING AS EXPECTED
     public boolean isClosed() {
-        return (socket == null) ? true : socket.isClosed() || socket.isInputShutdown() || socket.isOutputShutdown();
+        return (socket == null) ? true : isDisconnected;
     }
 
     // does the actual connecting
@@ -61,6 +62,8 @@ public class GameSocket implements Runnable {
                     Thread.sleep(1000);
                     continue;
                 }
+                // set timeout to one second
+                socket.setSoTimeout(1000);
                 out = socket.getOutputStream();
                 in  = socket.getInputStream();
                 return;
@@ -93,7 +96,7 @@ public class GameSocket implements Runnable {
             out.write(ByteBuffer.allocate(4).putInt(score[1]).array());
             out.flush();
         } catch (IOException e) {
-            // will probably never happen
+            isDisconnected = true;
         }
     }
 
@@ -102,7 +105,7 @@ public class GameSocket implements Runnable {
             out.write(ByteBuffer.allocate(8).putDouble(block).array());
             out.flush();
         } catch (IOException e) {
-            // will probably never happen
+            isDisconnected = true;
         }
     }
 
@@ -127,6 +130,7 @@ public class GameSocket implements Runnable {
             }
             return lastPos;
         } catch (IOException e) {
+            System.out.println(e.toString());
             return lastPos;
         }
     }
