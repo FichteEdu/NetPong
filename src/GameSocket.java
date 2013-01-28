@@ -107,13 +107,13 @@ public class GameSocket implements Runnable {
     // returns the current position of the other player's bar
     public double[] getPositions() {
         try {
-            while(in.available() >= 8*3) {
+            while(in.available() >= 8*3 + 4*2) {
                 byte[] b1 = new byte[8];
                 byte[] b2 = new byte[8];
                 byte[] b3 = new byte[8];
                 byte[] b4 = new byte[4];
                 byte[] b5 = new byte[4];
-                if(in.read(b1) + in.read(b2) + in.read(b3) < 8*3) {
+                if(in.read(b1) + in.read(b2) + in.read(b3) < 8*3 + 4*2) {
                     return lastPos;
                 }
                 ByteBuffer ballX = ByteBuffer.wrap(b1);
