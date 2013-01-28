@@ -82,11 +82,13 @@ public class GameSocket implements Runnable {
     }
 
     // writes the position of the ball and the bar in the stream and flushes it
-    public void writePositions(double ballX, double ballY, double block) {
+    public void writePositions(double ballX, double ballY, double block, int[] score) {
         try {
             out.write(ByteBuffer.allocate(8).putDouble(ballX).array());
             out.write(ByteBuffer.allocate(8).putDouble(ballY).array());
             out.write(ByteBuffer.allocate(8).putDouble(block).array());
+            out.write(ByteBuffer.allocate(4).putInt(score[0]).array());
+            out.write(ByteBuffer.allocate(4).putInt(score[1]).array());
             out.flush();
         } catch (IOException e) {
             // will probably never happen
@@ -109,13 +111,16 @@ public class GameSocket implements Runnable {
                 byte[] b1 = new byte[8];
                 byte[] b2 = new byte[8];
                 byte[] b3 = new byte[8];
+                byte[] b4 = new byte[4];
+                byte[] b5 = new byte[4];
                 if(in.read(b1) + in.read(b2) + in.read(b3) < 8*3) {
                     return lastPos;
                 }
                 ByteBuffer ballX = ByteBuffer.wrap(b1);
                 ByteBuffer ballY = ByteBuffer.wrap(b2);
                 ByteBuffer block = ByteBuffer.wrap(b3);
-                lastPos = new double[]{ballX.getDouble(), ballY.getDouble(), block.getDouble()};
+                ByteBuffer score[] = new ByteBuffer[]{ByteBuffer.wrap(b4), ByteBuffer.wrap(b5)};
+                lastPos = new double[]{ballX.getDouble(), ballY.getDouble(), block.getDouble(), score[0].getInt(), score[1].getInt()};
                 return lastPos;
             }
             return lastPos;
