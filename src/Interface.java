@@ -162,12 +162,6 @@ public class Interface extends JFrame {
     private int dtoi(double d) {
         return (int) Math.round(d);
     }
-
-    /* keep this to test things */
-    public static void main(String[] args) {
-        Interface inter = new Interface("NetPong 0.1");
-        inter.setVisible(true);
-    }
 }
 
 /**

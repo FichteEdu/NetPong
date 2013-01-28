@@ -35,6 +35,12 @@ public class Controller {
         startBall();
 
         while (gameRunning) {
+            // TODO: make this work
+            System.out.println(socket.isClosed());
+            if (socket.isClosed())
+                // connection closed by peer
+                System.exit(0);
+
             // check for input
             moveBar();
 
@@ -60,18 +66,6 @@ public class Controller {
         }
     }
 
-    private void readPositions() {
-        if (socket.isHost())
-            inter.bars[1].setY(socket.getBlock());
-        else {
-            double pos[] = socket.getPositions();
-            inter.ball.setLocation(pos[0], pos[1]);
-            inter.bars[0].setY(pos[2]);
-            inter.score[0] = (int) pos[3];
-            inter.score[1] = (int) pos[4];
-        }
-    }
-
     private double[] randDirection(double low, double high) {
         double direction[] = {
                 Math.random() * (high - low) + low,
@@ -85,7 +79,19 @@ public class Controller {
 
         return direction;
     }
-    
+
+    private void readPositions() {
+        if (socket.isHost())
+            inter.bars[1].setY(socket.getBlock());
+        else {
+            double pos[] = socket.getPositions();
+            inter.ball.setLocation(pos[0], pos[1]);
+            inter.bars[0].setY(pos[2]);
+            inter.score[0] = (int) pos[3];
+            inter.score[1] = (int) pos[4];
+        }
+    }
+
     private void writePositions() {
         if (socket.isHost())
             socket.writePositions(inter.ball.x, inter.ball.y, inter.bars[0].y, inter.score);
