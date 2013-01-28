@@ -1,26 +1,21 @@
 import java.lang.Math;
-import java.awt.Point;
 import java.awt.Rectangle;
 
 public class Controller {
     String version = "0.1 PRE-ALPHA";
 
     int punkte = 0;
-    ListenForKeys keyListener = new ListenForKeys(); // ListenForKeys gets new instance
-    Calculations calc = new Calculations();
-                                                     
+    ListenForKeys keyListener = new ListenForKeys();
+
     private Interface inter;
     private GameSocket socket;
     private Rectangle field;
 
     private final double barSpeed = 20; // movementspeed of the bars
     private boolean gameRunning = true; // set to false for pause
-    private Point ballDelta = new Point();
+    private Vector2D ballVect;
     private double gameSpeed = 6;
     private int sleep = 10;
-    
-    private double directionDouble;
-    
 
     public static void main(String[] args) {
         new Controller();
@@ -31,7 +26,7 @@ public class Controller {
         Connector c = new Connector("NetPong " + version + " - Connect");
         socket = c.connect();
         c.dispose();
-        
+
         // initialize game interface
         inter = new Interface("NetPong " + version + " - " + (socket.isHost() ? "Host" : "Client"));
         inter.addKeyListener(keyListener);
@@ -52,7 +47,7 @@ public class Controller {
 
             // communication
             writePositions();
-            readPositions(); //reads AND SETS positions
+            readPositions();
 
             // update interface
             inter.repaint();
@@ -75,7 +70,7 @@ public class Controller {
             inter.blocks[0].setY(pos[2]);
         }
     }
-    
+
     private double[] randDirection(double low, double high) {
         double direction[] = {
                 Math.random() * (high - low) + low,
@@ -111,9 +106,9 @@ public class Controller {
 
     private void checkCollisions() {
         // check if the ball will be in the horizontal bounds
-        if (    inter.ball.y         + ballDelta.y < field.y ||
-                inter.ball.getMaxY() + ballDelta.y > field.getMaxY())
-            ballDelta.y *= -1;
+        if (    inter.ball.y         + ballVect.y < field.y ||
+                inter.ball.getMaxY() + ballVect.y > field.getMaxY())
+            ballVect.y *= -1;
             
 
         // check if the ball will intersect a block
@@ -124,18 +119,19 @@ public class Controller {
                         || inter.ball.intersects(inter.blocks[1]);
         moveBall(-1);
         if (collides)
-            ballDelta.x *= -1;
+            ballVect.x *= -1;
     }
 
     private void moveBall(int times) {
-        inter.ball.shiftLocation(times * ballDelta.x, times * ballDelta.y);
+        inter.ball.shiftLocation(times * ballVect.x, times * ballVect.y);
     }
 
     private void startBall() {
         // possibly add checks for right direction
-        double[] direction = randDirection(7,12);
-        ballDelta.setLocation(calc.normVector(direction)[0] * gameSpeed, calc.normVector(direction)[1] * gameSpeed);
-        System.out.println(""+ ballDelta.getX() + "," + ballDelta.getY() + "," + directionDouble);
+        double[] dir = randDirection(7,12);
+        ballVect = new Vector2D(dir[0], dir[1]).normalized();
+        ballVect.scale(gameSpeed);
+        ballVect.print();
     }
 
     private void initBall() {
@@ -146,7 +142,6 @@ public class Controller {
     private void moveBar() {
         DoubleFillRect block = inter.blocks[socket.isHost() ? 0 : 1];
 
-        // TODO key inputs
         if (keyListener.isUp()) {
             if (block.y - barSpeed > field.y)
                 block.shiftLocation(0, -barSpeed);
