@@ -67,6 +67,8 @@ public class Controller {
             double pos[] = socket.getPositions();
             inter.ball.setLocation(pos[0], pos[1]);
             inter.bars[0].setY(pos[2]);
+            inter.score[0] = (int) pos[3];
+            inter.score[1] = (int) pos[4];
         }
     }
 
@@ -86,7 +88,7 @@ public class Controller {
     
     private void writePositions() {
         if (socket.isHost())
-            socket.writePositions(inter.ball.x, inter.ball.y, inter.bars[0].y);
+            socket.writePositions(inter.ball.x, inter.ball.y, inter.bars[0].y, inter.score);
         else
             socket.writeBar(inter.bars[1].y);
     }
