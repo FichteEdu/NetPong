@@ -18,9 +18,7 @@ public class GameSocket implements Runnable {
     private boolean isHost;
 
 
-    GameSocket() {
-
-    }
+    GameSocket() { }
 
     // attempts to connect to the host
     // does not block until a connection is established
@@ -117,7 +115,8 @@ public class GameSocket implements Runnable {
                 ByteBuffer ballX = ByteBuffer.wrap(b1);
                 ByteBuffer ballY = ByteBuffer.wrap(b2);
                 ByteBuffer block = ByteBuffer.wrap(b3);
-                return new double[]{ballX.getDouble(), ballY.getDouble(), block.getDouble()};
+                lastPos = new double[]{ballX.getDouble(), ballY.getDouble(), block.getDouble()};
+                return lastPos;
             }
             return lastPos;
         } catch (IOException e) {
@@ -133,8 +132,8 @@ public class GameSocket implements Runnable {
                 if(in.read(b) < 8) {
                     return lastValue;
                 }
-                ByteBuffer block = ByteBuffer.wrap(b);
-                return block.getDouble();
+                lastValue = ByteBuffer.wrap(b).getDouble();
+                return lastValue;
             }
             return lastValue;
         } catch (IOException e) {
